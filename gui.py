@@ -30,11 +30,15 @@ class GUI :
 
     def set_Nodes(self, nodes):
         for n in nodes:
+            
             xMin = n.pos_X*cst.SIZE_MULTIPLICATOR - cst.NODE_SIZE + 2*cst.MARGE
             xMax = n.pos_X*cst.SIZE_MULTIPLICATOR + cst.NODE_SIZE + 2*cst.MARGE
             yMin = n.pos_Y*cst.SIZE_MULTIPLICATOR - cst.NODE_SIZE + 2*cst.MARGE
             yMax = n.pos_Y*cst.SIZE_MULTIPLICATOR + cst.NODE_SIZE + 2*cst.MARGE
-            self.canvas.create_oval(xMin, yMin, xMax, yMax)
+            if n.isPU :
+                self.canvas.create_oval(xMin, yMin, xMax, yMax, fill='red')
+            else : 
+                self.canvas.create_oval(xMin, yMin, xMax, yMax)
 
             self.display()
         

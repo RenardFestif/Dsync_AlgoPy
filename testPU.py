@@ -18,12 +18,30 @@ channel_rep=[]
         # Create a new world for this configuration
 new_world = world.World(cst.WORLD_SIZE,cst.WORLD_SIZE)
         # Create the nodes
+
+### Complete node list for display
 nodes_list = [] 
-for i in range(cst.NUM_NODES):
+### Contains all PU users used to do the sensing 
+PU_list = []
+### Contains all SU
+SU_list = []
+
+### add ordinary node
+for i in range(cst.NUM_NODES-cst.NUM_PU):
     newN = nodes.Nodes(i,False,new_world)
+    SU_list.append(newN)
     nodes_list.append(newN)
+### add PU's
+
+for i in range(cst.NUM_NODES-cst.NUM_PU, cst.NUM_NODES):
+    newN = nodes.Nodes(i,False,new_world,True)
+    PU_list.append(newN) 
+    nodes_list.append(newN) 
+    
+
 for n in nodes_list :
         n.sense_In_Range_Nodes()
+        
 
 
 import gui
@@ -35,37 +53,14 @@ new_GUI.open_GUI()
 new_GUI.set_World(new_world)
 new_GUI.set_Nodes(nodes_list)
 
+### COLOR the PU's
+for pu in PU_list:
+    pu.set_PU_Color()
 
-
-nodes_list[0].complete_graph_coloring2()
+calls = SU_list[0].complete_graph_coloring1(None)
 new_GUI.color_refresh(nodes_list)
 
-sum_tmp = 0
-usage = dict()
-for i in range (cst.NUM_CHANNELS) : 
-    usage[i] =  0
-for node in nodes_list:
 
-    tmp = node.get_used_channel()
-
-    # for i in range(cst.NUM_CHANNELS):
-    #     tmp[i] = 0
-
-    # for chan in node.free_Channels.keys():
-
-    #     tmp[chan] += node.free_Channels.get(chan)
-    # for color in node.coloring.values():
-    #     tmp[color] += 1
-    
-    for i in tmp.values():
-        
-        if i == 0 or i == 1.0:
-            continue
-        else :
-            sum_tmp += i-1
-
-
-#adjacent_tmp = (sum_tmp / x) / number_Simulations
 
 ### DISPLAY OF COLORING
 
@@ -74,13 +69,13 @@ for n in nodes_list:
 
     tmp = n.get_used_channel()
     
-    
+    n.update_channels(PU_list)
     id_list = []
     for v in n.in_Range_Nodes :
         id_list.append(v.id)
 
 
-    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels} \n channel usage in the range of {n.id}: {tmp.values()} \n re-utilisation = {sum_tmp} \n\n" )
+    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels}\n finished in {calls} calls\n\n" )
     
 
 
