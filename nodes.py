@@ -31,6 +31,10 @@ class Nodes:
         self.free_Channels = self.init_free_Channels()
         self.in_Range_Nodes = []
 
+
+
+        self.MIS = []
+
         ### Dictionnaire coloring {key = channel, val = voisin}
         self.coloring = dict()
 
@@ -123,7 +127,7 @@ class Nodes:
                         self.in_Range_Nodes.append(tmp_case.get_Node())
     
     
-    def sense_free_channels(self, list_PU):
+    def sense_free_channels(self, list_PU=None):
         
         if list_PU == None or len(list_PU) == 0:
             return self.init_free_Channels()
@@ -197,7 +201,7 @@ class Nodes:
         self.pos_Y = self.pos_Y+displacement[1]
 
 
-    def update_channels(self, list_PU):
+    def update_channels(self, list_PU=None):
         '''
         Indicates the usage degree of each color at a node
         '''
@@ -228,12 +232,12 @@ class Nodes:
 
         self.free_Channels = {key: value for key, value in sorted(self.free_Channels.items(), key=lambda item : item[1])}
         
-    
+        
     def get_used_channel(self) :
         ret = dict()
         for i in range(cst.NUM_CHANNELS):
             ret[i] = 0
-
+        already_counted = []
         ### Channel used with direct neighbours and indirect
         for n in self.in_Range_Nodes :
             id_list = []
@@ -241,14 +245,16 @@ class Nodes:
                 id_list.append(v.id)
             for chans in n.coloring.keys():
 
-                    if (chans[0] in id_list and chans[1] in id_list ): 
-                        ret[n.coloring.get(chans)] += 1/2
+                    if (chans[0] in id_list and chans[1] in id_list and (chans[0], chans[1] ) not in already_counted): 
+                        ret[n.coloring.get(chans)] += 1
+                        already_counted.append((chans[0], chans[1]))
+                        already_counted.append((chans[1], chans[0]))
         ### Channel used by self                
         for color in self.coloring.values():
                 ret[color] += 1
         
         
-        return ret
+        return (ret)
             
        
     def check_links(self, node_liste):
@@ -281,6 +287,9 @@ class Nodes:
             return False
         return True
 
+
+        
+
         
 #################################################################################################################
 ### Function related to PU's
@@ -304,11 +313,19 @@ class Nodes:
 ### 1 => Distributed DSature
 ### 2 => Easy coloring
 ### 3 => Random Coloring
-    def complete_graph_coloring1(self, list_PU, calls=0):
+    def complete_graph_coloring1(self, list_PU=None, calls=0):
         '''
         This function initiate the coloring
         '''
         
+        ### check that every color has been colored 
+        length = 0
+        for n in self.in_Range_Nodes:
+            if (self.id,n.id) in self.coloring.keys():
+                
+                length += 1
+        if length == len(self.in_Range_Nodes):
+            return calls+1
         
         ### Variable used for the Performance analysis
         calls = calls + 1
@@ -349,7 +366,7 @@ class Nodes:
             ### Nodes that have less free channels are prioritary 
             if (len(neighbor_node.free_Channels) < len(self.free_Channels)):
                 
-                print (f"{neighbor_node.id} has {len(neighbor_node.free_Channels)} and I, {self.id} got {len(self.free_Channels)} \n go first my dear !")
+                #print (f"{neighbor_node.id} has {len(neighbor_node.free_Channels)} and I, {self.id} got {len(self.free_Channels)} \n go first my dear !")
                 ### First check that the link is not already assigned if it is we just copy the color inside the nodes dictionary
                 if (((self.id, neighbor_node.id) in self.coloring.keys()) and  len(self.coloring)>0 ):
                     #print(self.id, "color allocated", neighbor_node.coloring.get((neighbor_node.id, self.id)))
@@ -408,11 +425,19 @@ class Nodes:
         return calls
     
 
-    def complete_graph_coloring2(self, calls=0):
+    def complete_graph_coloring2(self, list_PU=None, calls=0):
         ### 1st step Compute the MIS ( Maximal Independent Set )
         # MIS = self.get_MIS()
 
+         ### check that every color has been colored 
+        length = 0
+        for n in self.in_Range_Nodes:
+            if (self.id,n.id) in self.coloring.keys():
+                length += 1
+        if length == len(self.in_Range_Nodes):
+            return calls+1
         
+
         calls += 1
         to_color = []
        
@@ -421,12 +446,7 @@ class Nodes:
         for node in self.in_Range_Nodes:
             
             ### check that the link isn't already colored 
-            ### We suppose that in a real situation we don't have to visit that node because he is aware of the communication with himself
-            if (((node.id, self.id) in node.coloring.keys()) and  len(node.coloring)>0):
-                #print( self.id, "color allocated", neighbor_node.coloring.get((neighbor_node.id, self.id)))
-                self.coloring[self.id, node.id] = node.coloring.get((node.id, self.id))
-                
-                
+            if (((node.id, self.id) in node.coloring.keys()) and  len(node.coloring)>0):         
                 continue               
 
             else :
@@ -440,8 +460,11 @@ class Nodes:
                 while (len (key_list)== 0):
                     iterator += 1
                     key_list = [k for (k, val) in self.free_Channels.items() if val == iterator]
-                     
+
+                ### Coloring one way      
                 self.coloring[self.id,node.id] = key_list[0]
+                ### And the other
+                node.coloring[node.id, self.id] = key_list[0]
                 
                 
                 
@@ -449,16 +472,24 @@ class Nodes:
                 
         
         for node in to_color : 
-            calls = node.complete_graph_coloring2()
-        
+            calls = node.complete_graph_coloring2(list_PU, calls)
+
         return calls
+        
+        
                 
-                
-    def complete_graph_coloring3(self, calls=0):
+    def complete_graph_coloring3(self, list_PU=None, calls=0):
         ### 1st step Compute the MIS ( Maximal Independent Set )
         # MIS = self.get_MIS()
 
-        
+        ### check that every color has been colored 
+        length = 0
+        for n in self.in_Range_Nodes:
+            if (self.id,n.id) in self.coloring.keys(): 
+                length += 1
+        if length == len(self.in_Range_Nodes):
+            return calls+1
+
         calls += 1
         to_color = []
        
@@ -487,7 +518,9 @@ class Nodes:
                 
         
         for node in to_color : 
-            calls = node.complete_graph_coloring2()
+            calls = node.complete_graph_coloring2(list_PU, calls)
+
+        
             
         return calls 
                 

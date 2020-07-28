@@ -13,7 +13,7 @@ size_y= 20
 
 num_Algo = 3
 
-number_nodes=[11, 20 ,30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250]
+number_nodes=[10, 20 ,30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350]
 
 x_value=[[] for i in range(num_Algo)]
 y_value=[[] for i in range(num_Algo)]
@@ -52,15 +52,16 @@ for algo in range(num_Algo):
         f.write(f'{algo} {x} {average}\n')
         x_value[algo].append(x)
         y_value[algo].append(average)
+        print(y_value)
         
     
 
 f.close()
 
-for i in range(algo):
-    if algo == 0 :
+for i in range(num_Algo):
+    if i == 0 :
         title = "Distributed DSature"
-    elif algo == 1 :
+    elif i == 1 :
         title = "Simple Color allocation"
     else :
         title = "Random Allocation"
@@ -68,4 +69,5 @@ for i in range(algo):
 
 plt.xlabel(f'Number of nodes in a {size_x}x{size_y} sized world')
 plt.ylabel(f'Number recursiv calls')
+plt.legend()
 plt.show()

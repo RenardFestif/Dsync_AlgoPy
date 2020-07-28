@@ -1,11 +1,13 @@
 '''
 test.py
 '''
+import concurrent.futures
 
-import multiprocessing
 import world
 import nodes
 import time
+
+import multiprocessing
 
 import nodes
 import world
@@ -35,9 +37,21 @@ new_GUI.open_GUI()
 new_GUI.set_World(new_world)
 new_GUI.set_Nodes(nodes_list)
 
+### non concurrent 
+#calls = nodes_list[0].complete_graph_coloring2()
+#calls1 =nodes_list[1].complete_graph_coloring2()
+#summ = calls + calls1
 
 
-nodes_list[0].complete_graph_coloring2()
+### Concurent 
+
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    f1 = executor.submit(nodes_list[0].complete_graph_coloring1)
+    f2 = executor.submit(nodes_list[1].complete_graph_coloring1)
+    calls = f1.result()
+    calls1 = f2.result()
+    
+summ = calls + calls1
 new_GUI.color_refresh(nodes_list)
 
 sum_tmp = 0
@@ -48,14 +62,6 @@ for node in nodes_list:
 
     tmp = node.get_used_channel()
 
-    # for i in range(cst.NUM_CHANNELS):
-    #     tmp[i] = 0
-
-    # for chan in node.free_Channels.keys():
-
-    #     tmp[chan] += node.free_Channels.get(chan)
-    # for color in node.coloring.values():
-    #     tmp[color] += 1
     
     for i in tmp.values():
         
@@ -64,8 +70,6 @@ for node in nodes_list:
         else :
             sum_tmp += i-1
 
-
-#adjacent_tmp = (sum_tmp / x) / number_Simulations
 
 ### DISPLAY OF COLORING
 
@@ -80,7 +84,7 @@ for n in nodes_list:
         id_list.append(v.id)
 
 
-    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels} \n channel usage in the range of {n.id}: {tmp.values()} \n re-utilisation = {sum_tmp} \n\n" )
+    print (f"Final coloring for node {n.id} {n.coloring} completed in {calls} and {calls1} sum is equal to {summ} calls\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels} \n channel usage in the range of {n.id}: {tmp.values()} \n re-utilisation = {sum_tmp} \n\n" )
     
 
 
