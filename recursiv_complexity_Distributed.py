@@ -15,7 +15,8 @@ size_y= 20
 num_Algo = 3
 
 number_nodes=250
-num_Master_Node = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+pace_Master_Node = 10
+max_master_nodes = 50
 
 x_value=[[] for i in range(num_Algo)]
 y_value=[[] for i in range(num_Algo)]
@@ -24,7 +25,7 @@ y_value=[[] for i in range(num_Algo)]
 for algo in range(num_Algo):
     
     # Iterate over the different configuration (Number of nodes)
-    for init in num_Master_Node:
+    for init in range(1,max_master_nodes,pace_Master_Node):
         
         all_visit=[]
         for sim in range(number_Simulations):
@@ -91,7 +92,7 @@ for i in range(num_Algo):
         title = "Random Allocation"
     plt.plot(x_value[i], y_value[i], label=title)
 
-plt.xlabel(f'Number of nodes in a {size_x}x{size_y} sized world')
+plt.xlabel(f'Number of initiator nodes in a {size_x}x{size_y} sized world')
 plt.ylabel(f'Number recursiv calls')
 plt.legend()
 plt.show()

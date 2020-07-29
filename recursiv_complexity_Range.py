@@ -14,7 +14,7 @@ size_y= 20
 num_Algo = 3
 
 number_nodes=250
-t_Range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+max_Range = 6
 
 x_value=[[] for i in range(num_Algo)]
 y_value=[[] for i in range(num_Algo)]
@@ -23,7 +23,7 @@ y_value=[[] for i in range(num_Algo)]
 for algo in range(num_Algo):
     
     # Iterate over the different configuration (Number of nodes)
-    for x in t_Range:
+    for x in range(1,max_Range):
         cst.MAX_TRANSMISSION_RANGE = x
         all_visit=[]
         for sim in range(number_Simulations):
@@ -68,7 +68,7 @@ for i in range(num_Algo):
         title = "Random Allocation"
     plt.plot(x_value[i], y_value[i], label=title)
 
-plt.xlabel(f'Number of nodes in a {size_x}x{size_y} sized world')
+plt.xlabel(f'Maximum Transmission range of a node')
 plt.ylabel(f'Number recursiv calls')
 plt.legend()
 plt.show()

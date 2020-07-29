@@ -8,16 +8,16 @@ import random
 '''
 Constants related to the environment
 '''
-NUM_CHANNELS = 3
-WORLD_SIZE = 3
+NUM_CHANNELS = 11
+WORLD_SIZE = 4
 
 '''
 Constants related to the nodes
 '''
-NUM_NODES= 6
+NUM_NODES= 13
 NUM_MASTER_NODES= 2
 NUM_PU = 1
-NUM_CHANNEL_USED_BY_PU = 1
+
 MAX_TRANSMISSION_RANGE = 1
 
 '''

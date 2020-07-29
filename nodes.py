@@ -9,7 +9,7 @@ import world
 import math
 
 class Nodes:
-    def __init__(self,id,is_Master,world,isPU=False):
+    def __init__(self,id,is_Master,world,isPU=False, isChanRandom=False):
         self.id = id
         self.pos_X = 0
         self.pos_Y = 0
@@ -17,7 +17,7 @@ class Nodes:
         ### Se referer à un fichier pour l'activité des PU
         self.isPU = isPU
         self.isPUOnline = True
-        self.PU_channels = []
+        self.PU_channel = None
 
         ### Used to determine all the one hop neighbor
         self.transmission_Range = 0
@@ -31,6 +31,9 @@ class Nodes:
         self.free_Channels = self.init_free_Channels()
         self.in_Range_Nodes = []
 
+
+        self.randomChan_enabled = isChanRandom
+        self.randomChan = dict()
 
 
         self.MIS = []
@@ -75,8 +78,18 @@ class Nodes:
         Sets the freeChannels 
         '''
         chan = dict()
-        for i in range(cst.NUM_CHANNELS):
-            chan[i]=0
+        if self.randomChan_enabled:
+            if len(self.randomChan) == 0:
+
+                for i in range(cst.NUM_CHANNELS):
+                    YesOrNo = random.choice([True,False])
+                    if YesOrNo:
+                        self.randomChan[i]=0
+            chan = self.randomChan
+
+        else : 
+            for i in range(cst.NUM_CHANNELS):
+                chan[i]=0
         return chan
        
 
@@ -135,15 +148,24 @@ class Nodes:
         chan_to_remove = []
        
         for pu in list_PU:
-            if pu.isPUOnline and self.is_in_range(pu) and len(pu.PU_channels) > 0:
-                for chan in pu.PU_channels :
-                    chan_to_remove.append(chan)
-    
-        for i in range(cst.NUM_CHANNELS):
-            if i in chan_to_remove:
-                continue
-            else :
-                free_channels[i] = 0
+            if pu.isPUOnline and self.is_in_range(pu) and pu.PU_channel != None:
+                chan_to_remove.append(pu.PU_channel)
+            ### check indirect neighbour
+            for n in self.in_Range_Nodes :
+                if n.is_in_range(pu):
+                    chan_to_remove.append(pu.PU_channel) 
+
+        if self.randomChan_enabled:
+            free_channels = self.init_free_Channels()
+            for i in chan_to_remove:
+                if i in free_channels.keys() :
+                    del free_channels[i]
+        else :
+            for i in range(cst.NUM_CHANNELS):
+                if i in chan_to_remove:
+                    continue
+                else:
+                    free_channels[i] = 0
 
         return free_channels
 
@@ -297,16 +319,13 @@ class Nodes:
         if not self.isPUOnline:
             return 
         
-        if len(self.PU_channels) == 0:
-            for i in range(cst.NUM_CHANNEL_USED_BY_PU):
-                rand_chan = random.randint(0,10)
-                self.PU_channels.append(rand_chan)
+        if self.PU_channel == None:
+            rand_chan = random.randint(0,cst.NUM_CHANNELS-1)
+            self.PU_channel = rand_chan
 
         for n in self.in_Range_Nodes:
-            rand_chan = random.choice(self.PU_channels)
-
-            self.coloring[self.id, n.id]=rand_chan
-            n.coloring[n.id, self.id] = rand_chan
+            self.coloring[self.id, n.id]=self.PU_channel
+            n.coloring[n.id, self.id] = self.PU_channel
         
 #################################################################################################################    
 ### Graph coloring algorithm 
@@ -381,6 +400,9 @@ class Nodes:
             ### Other possibility is that the current node have the same amount of available channel than the neighbour
             else:
                 self.update_channels(list_PU)
+                neighbor_node.update_channels(list_PU)
+
+
                 ### First check that the link is not already assigned if it is we just copy the color inside the nodes dictionary and we pass
                 ### since we know for sure that the "smaller" have completed their graph   
                      
@@ -388,21 +410,27 @@ class Nodes:
                     #print( self.id, "color allocated", neighbor_node.coloring.get((neighbor_node.id, self.id)))
                     
                     continue               
-
-            
-                common_channel = list(set(neighbor_node.free_Channels).intersection(self.free_Channels))
+                
+                ### Common channel between self and neighbor
+                to_remove = []
+                for chan in self.free_Channels.keys():
+                    if not(chan in neighbor_node.free_Channels.keys()):
+                        to_remove.append(chan)
+                for rem in to_remove:
+                    del self.free_Channels[rem]
                 
                 ### If there is no common channel we just pass and put the equal node inside a to_color list
-                if (len(common_channel)==0):
+                if (len(self.free_Channels)==0):
                     #print("There is no common channel between", self.id,"and", neighbor_node.id,"/ The connection cannot be established")
                     #to_color.append(neighbor_node)
+
                     continue
                 ### Else we assigne the common channel and put the equal node in the list
                 ### use the less used 
                 
+               
 
-                ### IMPORTANT PART
-                
+                ### Setting a free channel
                 key_list = [k for (k, val) in self.free_Channels.items() if val == 0]
                 iterator = 0
                 while (len (key_list)== 0):
@@ -419,8 +447,11 @@ class Nodes:
                 to_color.append(neighbor_node)
            
         ### The only thing left to do is to to execute the function on the equal and higher nodes 
+        
         for n in to_color :            
             calls = n.complete_graph_coloring1(list_PU, calls)
+
+        
             
         return calls
     
@@ -435,7 +466,7 @@ class Nodes:
             if (self.id,n.id) in self.coloring.keys():
                 length += 1
         if length == len(self.in_Range_Nodes):
-            return calls+1
+            return calls
         
 
         calls += 1
@@ -450,8 +481,32 @@ class Nodes:
                 continue               
 
             else :
-                # print("checking channel used in the the range of the neighbour")
-                self.update_channels()
+                self.update_channels(list_PU)
+                node.update_channels(list_PU)
+
+
+                ### First check that the link is not already assigned if it is we just copy the color inside the nodes dictionary and we pass
+                ### since we know for sure that the "smaller" have completed their graph   
+                     
+                if (((self.id, node.id) in self.coloring.keys()) and  len(self.coloring)>0):
+                    #print( self.id, "color allocated", neighbor_node.coloring.get((neighbor_node.id, self.id)))
+                    
+                    continue               
+                
+                ### Common channel between self and neighbor
+                to_remove = []
+                for chan in self.free_Channels.keys():
+                    if not(chan in node.free_Channels.keys()):
+                        to_remove.append(chan)
+                for rem in to_remove:
+                    del self.free_Channels[rem]
+                
+                ### If there is no common channel we just pass and put the equal node inside a to_color list
+                if (len(self.free_Channels)==0):
+                    #print("There is no common channel between", self.id,"and", neighbor_node.id,"/ The connection cannot be established")
+                    #to_color.append(neighbor_node)
+
+                    continue
 
                 
 
@@ -488,7 +543,7 @@ class Nodes:
             if (self.id,n.id) in self.coloring.keys(): 
                 length += 1
         if length == len(self.in_Range_Nodes):
-            return calls+1
+            return calls
 
         calls += 1
         to_color = []
@@ -507,11 +562,37 @@ class Nodes:
 
             else :
                 # print("checking channel used in the the range of the neighbour")
+                self.update_channels(list_PU)
+                node.update_channels(list_PU)
+
+
+                ### First check that the link is not already assigned if it is we just copy the color inside the nodes dictionary and we pass
+                ### since we know for sure that the "smaller" have completed their graph   
+                     
+                if (((self.id, node.id) in self.coloring.keys()) and  len(self.coloring)>0):
+                    #print( self.id, "color allocated", neighbor_node.coloring.get((neighbor_node.id, self.id)))
+                    
+                    continue               
                 
+                ### Common channel between self and neighbor
+                to_remove = []
+                for chan in self.free_Channels.keys():
+                    if not(chan in node.free_Channels.keys()):
+                        to_remove.append(chan)
+                for rem in to_remove:
+                    del self.free_Channels[rem]
+                
+                ### If there is no common channel we just pass and put the equal node inside a to_color list
+                if (len(self.free_Channels)==0):
+                    #print("There is no common channel between", self.id,"and", neighbor_node.id,"/ The connection cannot be established")
+                    #to_color.append(neighbor_node)
+
+                    continue
 
                 chann_list = [k for k in self.free_Channels.keys()]
-                     
-                self.coloring[self.id,node.id] = random.choice(chann_list)
+                chan_choice = random.choice(chann_list)
+                self.coloring[self.id,node.id] = chan_choice
+                node.coloring[node.id, self.id] = chan_choice
                 
                 self.update_channels()
                 to_color.append(node)
