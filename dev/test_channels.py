@@ -25,7 +25,7 @@ PU_list = []
 SU_list = []
 ### SU
 for i in range(cst.NUM_NODES-cst.NUM_PU):
-    newN = nodes.Nodes(i,False,new_world, False)
+    newN = nodes.Nodes(i,False,new_world, False, True)
     nodes_list.append(newN)
     SU_list.append(newN)
 ### PU
@@ -131,7 +131,7 @@ for n in nodes_list:
         id_list.append(v.id)
 
 
-    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n\n" )
+    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n Available chan : {list(n.sense_free_channels(PU_list).keys())}\n\n" )
     
 
 

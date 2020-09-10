@@ -22,7 +22,7 @@ new_world = world.World(cst.WORLD_SIZE,cst.WORLD_SIZE)
         # Create the nodes
 nodes_list = [] 
 for i in range(cst.NUM_NODES):
-    newN = nodes.Nodes(i,False,new_world)
+    newN = nodes.Nodes(i,False,new_world, False, True)
     nodes_list.append(newN)
 for n in nodes_list :
         n.sense_In_Range_Nodes()
@@ -38,18 +38,17 @@ new_GUI.set_World(new_world)
 new_GUI.set_Nodes(nodes_list)
 
 ### non concurrent 
-#calls = nodes_list[0].complete_graph_coloring2()
-#calls1 =nodes_list[1].complete_graph_coloring2()
-#summ = calls + calls1
-
+calls = nodes_list[0].complete_graph_coloring1()
+calls1 =nodes_list[1].complete_graph_coloring1()
+summ = calls + calls1
 
 ### Concurent 
 
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    f1 = executor.submit(nodes_list[0].complete_graph_coloring1)
-    f2 = executor.submit(nodes_list[1].complete_graph_coloring1)
-    calls = f1.result()
-    calls1 = f2.result()
+# with concurrent.futures.ProcessPoolExecutor() as executor:
+#     f1 = executor.submit(nodes_list[0].complete_graph_coloring1)
+#     f2 = executor.submit(nodes_list[1].complete_graph_coloring1)
+#     calls = f1.result()
+#     calls1 = f2.result()
     
 summ = calls + calls1
 new_GUI.color_refresh(nodes_list)

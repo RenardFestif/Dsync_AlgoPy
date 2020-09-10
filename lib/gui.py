@@ -88,8 +88,7 @@ class GUI :
         for l in self.link_Tab:
             self.canvas.delete(l)
         
-        for color in list(node.coloring.keys()):
-            
+        for color in list(node.coloring.keys()):  
             line = self.canvas.create_line(node_list[color[0]].pos_X*cst.SIZE_MULTIPLICATOR+2*cst.MARGE, node_list[color[0]].pos_Y*cst.SIZE_MULTIPLICATOR+2*cst.MARGE, node_list[color[1]].pos_X*cst.SIZE_MULTIPLICATOR+2*cst.MARGE, node_list[color[1]].pos_Y*cst.SIZE_MULTIPLICATOR+2*cst.MARGE, fill=cst.COLOR[node.coloring.get(color)])
             self.link_Tab.append(line)
 

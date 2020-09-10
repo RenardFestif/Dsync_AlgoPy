@@ -1,11 +1,30 @@
+import preRun as pr
+
+import time
+
+from matplotlib import pyplot as plt
+
+
+
+import constants as cst
 import nodes
 import world
-import constants as cst 
-import time
-from matplotlib import pyplot as plt 
 
 
-f = open("result_complexity_calls_RANGE","w")
+'''
+Reccursiv call evaluation of the coloring algorithm with node randomly placed
+size of the world 20x20
+Number of nodes 250
+No PU
+Range from 1 to 5
+Average over 10 simulations per Algo
+11 Free channels 
+Assignation could be random or fixed
+3 distributed Coloring algorithm
+'''
+
+
+f = open(pr.get_path("result_complexity_calls_RANGE"),"w")
 
 number_Simulations = 10
 size_x = 20

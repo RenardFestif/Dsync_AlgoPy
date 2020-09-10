@@ -31,6 +31,11 @@ class World :
         return self.size_X
     def get_Y(self):
         return self.get_Y  
+
+    def reset(self):
+        for i in range (self.size_X):
+            for j in range (self.size_Y):
+                self.world[i][j] = Case()
             
 
 

@@ -2,6 +2,8 @@
 test.py
 '''
 
+import preRun
+import util
 import multiprocessing
 import world
 import nodes
@@ -28,7 +30,7 @@ SU_list = []
 
 ### add ordinary node
 for i in range(cst.NUM_NODES-cst.NUM_PU):
-    newN = nodes.Nodes(i,False,new_world)
+    newN = nodes.Nodes(i,False,new_world,False)
     SU_list.append(newN)
     nodes_list.append(newN)
 ### add PU's
@@ -57,7 +59,9 @@ new_GUI.set_Nodes(nodes_list)
 for pu in PU_list:
     pu.set_PU_Color()
 
-calls = SU_list[0].complete_graph_coloring1(None)
+calls = SU_list[0].complete_graph_coloring3(PU_list)
+#util.best_coloring(nodes_list, PU_list)
+count = util.count_channel_reused_PU(nodes_list,SU_list,PU_list)
 new_GUI.color_refresh(nodes_list)
 
 
@@ -75,11 +79,11 @@ for n in nodes_list:
         id_list.append(v.id)
 
 
-    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels}\n finished in {calls} calls\n\n" )
+    print (f"Final coloring for node {n.id} {n.coloring}\n Transmission range : {n.transmission_Range}\n Neighbour : {id_list} \n channel usage : {n.free_Channels}\n\n" )
     
 
 
-
+print(count)
 
 new_GUI.loop()
 

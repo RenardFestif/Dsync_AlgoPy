@@ -1,12 +1,20 @@
+import preRun as pr
+
+import time
+
+from matplotlib import pyplot as plt
+
+
+
+import constants as cst
 import nodes
 import world
-import constants as cst 
-import time
-from matplotlib import pyplot as plt 
+
 import concurrent.futures
 
 
-f = open("result_complexity_calls_DISTRIBUTED","w")
+f = open(pr.get_path("result_complexity_calls_DISTRIBUTED"),"w")
+
 
 number_Simulations = 10
 size_x = 20

@@ -9,12 +9,12 @@ import random
 Constants related to the environment
 '''
 NUM_CHANNELS = 11
-WORLD_SIZE = 4
+WORLD_SIZE = 10
 
 '''
 Constants related to the nodes
 '''
-NUM_NODES= 13
+NUM_NODES= 70
 NUM_MASTER_NODES= 2
 NUM_PU = 1
 
@@ -24,7 +24,7 @@ MAX_TRANSMISSION_RANGE = 1
 Constants relaed to the graphical display
 '''
 ### General
-SIZE_MULTIPLICATOR = 100
+SIZE_MULTIPLICATOR = 50
 MARGE = 10 
 # Refreshing period 
 REFRESH = 0.5
